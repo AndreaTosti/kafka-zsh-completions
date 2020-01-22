@@ -1,6 +1,21 @@
 #!/bin/zsh
 
 OUT=kafka.zsh
+
+# Leave blank if you don't want to use a custom directory
+BINARY_FILES_DIRECTORY=./kafka_2.13-2.4.0/bin
+
+if test -z "$BINARY_FILES_DIRECTORY"
+then
+      #BINARY_FILES_DIRECTORY is empty
+      echo "\$BINARY_FILES_DIRECTORY is empty, using normal binaries"
+      EXTENSION=""
+else
+      echo "\$BINARY_FILES_DIRECTORY is NOT empty, using it. (VALUE = "$BINARY_FILES_DIRECTORY")"
+      EXTENSION=".sh"
+fi
+
+
 COMMANDS=("kafka-acls" "kafka-avro-console-consumer" "kafka-avro-console-producer"
 "kafka-broker-api-versions" "kafka-configs" "kafka-console-consumer" 
 "kafka-console-producer" "kafka-consumer-groups" "kafka-consumer-perf-test" 
@@ -14,7 +29,7 @@ function kafka_retrieve_help_command() {
 	cmd=$1
 	option=""
 	desc=""
-	help_output=`$cmd --help 2>&1`
+	help_output=`$BINARY_FILES_DIRECTORY/$cmd$EXTENSION --help 2>&1`
 	arg_name="_$(echo $cmd | tr - _)_args"
 	start_desc_column=`echo $help_output | grep Description | head -n 1`
 
@@ -71,6 +86,13 @@ function kafka_retrieve_help_command() {
 function kafka-command() {
 	cmd=$1
 	echo "compdef \"_kafka-command $cmd\" $cmd" >> $OUT
+    
+    if test -z "$BINARY_FILES_DIRECTORY"
+    then
+        #BINARY_FILES_DIRECTORY is empty
+    else
+        echo "compdef \"_kafka-command $cmd\" $cmd".sh >> $OUT
+    fi
 }
 
 cat << EOF > $OUT
